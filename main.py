@@ -1,6 +1,8 @@
-import Image
-from smooth_filter import GAUSSIAN
+import Image, ImageFilter
+import sys
 from graph import build_graph, segment_graph
+from smooth_filter import GAUSSIAN
+from random import random
 from numpy import sqrt
 
 def diff(img, x1, y1, x2, y2):
@@ -12,19 +14,38 @@ def diff(img, x1, y1, x2, y2):
 def threshold(size, const):
     return (const / size)
 
+def generate_image(forest, width, height):
+    random_color = lambda: (int(random()*255), int(random()*255), int(random()*255))
+    colors = [random_color() for i in xrange(width*height)]
+
+    img = Image.new('RGB', (width, height))
+    im = img.load()
+    for y in xrange(height):
+        for x in xrange(width):
+            comp = forest.find(y * width + x)
+            im[x, y] = colors[comp]
+
+    return img
+
 if __name__ == '__main__':
-    image_file = Image.open('data/beach.PPM')
-    size = image_file.size
-    print image_file.format, size, image_file.mode
+    if len(sys.argv) != 5:
+        print 'Invalid number of arguments passed'
+        print 'Correct usage: python main.py k min_component_size input_file output_file'
+    else:
+        image_file = Image.open(sys.argv[3])
+        size = image_file.size
+        print 'Image info:', image_file.format, size, image_file.mode
 
-    #small = image_file.crop((0, 0, 8, 8))
-    #small.save('data/small_beach.PPM')
+        K = float(sys.argv[1])
+        min_size = int(sys.argv[2])
 
-    smooth = image_file.filter(GAUSSIAN)
-    #smooth.save('data/testfiltered.png')
+        smooth = image_file.filter(GAUSSIAN)
+        #smooth.save('data/testfiltered.png')
 
-    graph = build_graph(smooth, diff)
-    forest = segment_graph(graph, size[0]*size[1], float(500), 50, threshold)
+        graph = build_graph(image_file, diff)
+        forest = segment_graph(graph, size[0]*size[1], K, min_size, threshold)
 
-    print 'num sets: %d' % forest.num_sets
+        image = generate_image(forest, size[0], size[1])
+        image.save(sys.argv[4])
 
+        print 'Number of components: %d' % forest.num_sets

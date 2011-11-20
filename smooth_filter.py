@@ -1,7 +1,7 @@
 import ImageFilter
 from numpy import *
 
-SIGMA = 0.8
+SIGMA = 0.5
 
 def gaussian_grid(sigma, alpha=4):
     sig = max(sigma, 0.01)

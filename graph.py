@@ -1,4 +1,3 @@
-
 class Node:
     def __init__(self, parent, rank=0, size=1):
         self.parent = parent
