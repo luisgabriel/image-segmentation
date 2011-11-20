@@ -1,5 +1,6 @@
 import Image
 from smooth_filter import GAUSSIAN
+from graph import build_graph, segment_graph
 from numpy import sqrt
 
 def diff(img, x1, y1, x2, y2):
@@ -8,40 +9,22 @@ def diff(img, x1, y1, x2, y2):
     b = (img[x1, y1][2] - img[x2, y2][2]) ** 2
     return sqrt(r + g + b)
 
-def build_graph(image):
-    img = image.load()
-    width = image.size[0]
-    height = image.size[1]
-
-    graph = []
-    for y in xrange(height):
-        for x in xrange(width):
-            if x < width-1:
-                w = diff(img, x, y, x+1, y) 
-                graph.append((y * width + x, y * width + (x+1), w))
-
-            if y < height-1:
-                w = diff(img, x, y, x, y+1) 
-                graph.append((y * width + x, (y+1) * width + x, w))
-
-            if x < width-1 and y < height-1:
-                w = diff(img, x, y, x+1, y+1) 
-                graph.append((y * width + x, (y+1) * width + (x+1), w))
-
-            if x < width-1 and y > 0:
-                w = diff(img, x, y, x+1, y-1) 
-                graph.append((y * width + x, (y-1) * width + (x+1), w))
-
-    return graph
-
+def threshold(size, const):
+    return (const / size)
 
 if __name__ == '__main__':
     image_file = Image.open('data/beach.PPM')
-    print image_file.format, image_file.size, image_file.mode
+    size = image_file.size
+    print image_file.format, size, image_file.mode
+
+    #small = image_file.crop((0, 0, 8, 8))
+    #small.save('data/small_beach.PPM')
 
     smooth = image_file.filter(GAUSSIAN)
     #smooth.save('data/testfiltered.png')
 
-    graph = build_graph(smooth)
-    for edge in graph:
-        print '(%s, %s, %.2f)' % (edge[0], edge[1], edge[2])
+    graph = build_graph(smooth, diff)
+    forest = segment_graph(graph, size[0]*size[1], float(500), 50, threshold)
+
+    print 'num sets: %d' % forest.num_sets
+
