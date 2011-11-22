@@ -1,7 +1,5 @@
-import ImageFilter
+from scipy.signal import convolve2d
 from numpy import *
-
-SIGMA = 0.5
 
 def gaussian_grid(sigma, alpha=4):
     sig = max(sigma, 0.01)
@@ -10,11 +8,10 @@ def gaussian_grid(sigma, alpha=4):
     n = m + 1
     x, y = mgrid[-m:n,-m:n]
     g = exp(m ** 2) * exp(-0.5 * (x**2 + y**2))
-    return g.round().astype(int)
+    return g / g.sum()
 
-class GAUSSIAN(ImageFilter.BuiltinFilter):
-    name = "Gaussian"
-    grid = gaussian_grid(SIGMA)
-    g = grid.flatten().tolist()
-    dim = int(math.sqrt(grid.size))
-    filterargs = (dim,dim), sum(g), 0, tuple(g)
+def filter_image(image, mask):
+    layer = asarray(image).astype('float')
+    layer = convolve2d(layer, mask, mode='same')
+    #layer = convolve2d(layer, mask, mode='same')
+    return layer

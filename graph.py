@@ -40,29 +40,25 @@ class Forest:
         for node in self.nodes:
             print node
 
-def build_graph(image, diff):
-    img = image.load()
-    width = image.size[0]
-    height = image.size[1]
-
+def build_graph(img, width, height, diff):
     graph = []
     for y in xrange(height):
         for x in xrange(width):
             if x < width-1:
                 w = diff(img, x, y, x+1, y)
-                graph.append([y * width + x, y * width + (x+1), w])
+                graph.append((y * width + x, y * width + (x+1), w))
 
             if y < height-1:
                 w = diff(img, x, y, x, y+1)
-                graph.append([y * width + x, (y+1) * width + x, w])
+                graph.append((y * width + x, (y+1) * width + x, w))
 
             if x < width-1 and y < height-1:
                 w = diff(img, x, y, x+1, y+1)
-                graph.append([y * width + x, (y+1) * width + (x+1), w])
+                graph.append((y * width + x, (y+1) * width + (x+1), w))
 
             if x < width-1 and y > 0:
                 w = diff(img, x, y, x+1, y-1)
-                graph.append([y * width + x, (y-1) * width + (x+1), w])
+                graph.append((y * width + x, (y-1) * width + (x+1), w))
 
     return graph
 
@@ -81,7 +77,7 @@ def segment_graph(graph, num_nodes, const, min_size, threshold_func):
 
     forest = Forest(num_nodes)
     sorted_graph = sorted(graph, key=weight)
-    threshold = [const] * num_nodes
+    threshold = [threshold_func(1, const)] * num_nodes
 
     for edge in sorted_graph:
         parent_a = forest.find(edge[0])
