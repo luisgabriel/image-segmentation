@@ -40,25 +40,27 @@ class Forest:
         for node in self.nodes:
             print node
 
-def build_graph(img, width, height, diff):
+def create_edge(img, width, x, y, x1, y1, diff):
+    vertex_id = lambda x, y: y * width + x
+    w = diff(img, x, y, x1, y1)
+    return (vertex_id(x, y), vertex_id(x1, y1), w)
+
+def build_graph(img, width, height, diff, neighborhood_8=False):
     graph = []
     for y in xrange(height):
         for x in xrange(width):
-            if x < width-1:
-                w = diff(img, x, y, x+1, y)
-                graph.append((y * width + x, y * width + (x+1), w))
+            if x > 0:
+                graph.append(create_edge(img, width, x, y, x-1, y, diff))
 
-            if y < height-1:
-                w = diff(img, x, y, x, y+1)
-                graph.append((y * width + x, (y+1) * width + x, w))
+            if y > 0:
+                graph.append(create_edge(img, width, x, y, x, y-1, diff))
 
-            if x < width-1 and y < height-1:
-                w = diff(img, x, y, x+1, y+1)
-                graph.append((y * width + x, (y+1) * width + (x+1), w))
+            if neighborhood_8:
+                if x > 0 and y > 0:
+                    graph.append(create_edge(img, width, x, y, x-1, y-1, diff))
 
-            if x < width-1 and y > 0:
-                w = diff(img, x, y, x+1, y-1)
-                graph.append((y * width + x, (y-1) * width + (x+1), w))
+                if x > 0 and y < height-1:
+                    graph.append(create_edge(img, width, x, y, x-1, y+1, diff))
 
     return graph
 
