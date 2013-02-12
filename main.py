@@ -1,4 +1,5 @@
 import Image
+import ImageFilter
 import sys
 from graph import build_graph, segment_graph
 from smooth_filter import gaussian_grid, filter_image
@@ -50,7 +51,6 @@ if __name__ == '__main__':
         print 'Image info: ', image_file.format, size, image_file.mode
 
         grid = gaussian_grid(sigma)
-
         if image_file.mode == 'RGB':
             image_file.load()
             r, g, b = image_file.split()
@@ -70,5 +70,11 @@ if __name__ == '__main__':
 
         image = generate_image(forest, size[1], size[0])
         image.save(sys.argv[6])
+
+        edges_image = image.filter(ImageFilter.FIND_EDGES)
+        temp = sys.argv[6].split('/')
+        temp[-1] = 'edges-' + temp[-1]
+        edges_image.save('/'.join(temp))
+        edges_image.show()
 
         print 'Number of components: %d' % forest.num_sets
