@@ -9,7 +9,7 @@ class Node:
 
 class Forest:
     def __init__(self, num_nodes):
-        self.nodes = [Node(i) for i in xrange(num_nodes)]
+        self.nodes = [Node(i) for i in range(num_nodes)]
         self.num_sets = num_nodes
 
     def size_of(self, i):
@@ -38,7 +38,7 @@ class Forest:
 
     def print_nodes(self):
         for node in self.nodes:
-            print node
+            print(node)
 
 def create_edge(img, width, x, y, x1, y1, diff):
     vertex_id = lambda x, y: y * width + x
@@ -46,23 +46,23 @@ def create_edge(img, width, x, y, x1, y1, diff):
     return (vertex_id(x, y), vertex_id(x1, y1), w)
 
 def build_graph(img, width, height, diff, neighborhood_8=False):
-    graph = []
-    for y in xrange(height):
-        for x in xrange(width):
+    graph_edges = []
+    for y in range(height):
+        for x in range(width):
             if x > 0:
-                graph.append(create_edge(img, width, x, y, x-1, y, diff))
+                graph_edges.append(create_edge(img, width, x, y, x-1, y, diff))
 
             if y > 0:
-                graph.append(create_edge(img, width, x, y, x, y-1, diff))
+                graph_edges.append(create_edge(img, width, x, y, x, y-1, diff))
 
             if neighborhood_8:
                 if x > 0 and y > 0:
-                    graph.append(create_edge(img, width, x, y, x-1, y-1, diff))
+                    graph_edges.append(create_edge(img, width, x, y, x-1, y-1, diff))
 
                 if x > 0 and y < height-1:
-                    graph.append(create_edge(img, width, x, y, x-1, y+1, diff))
+                    graph_edges.append(create_edge(img, width, x, y, x-1, y+1, diff))
 
-    return graph
+    return graph_edges
 
 def remove_small_components(forest, graph, min_size):
     for edge in graph:
@@ -74,13 +74,14 @@ def remove_small_components(forest, graph, min_size):
 
     return  forest
 
-def segment_graph(graph, num_nodes, const, min_size, threshold_func):
-    weight = lambda edge: edge[2]
-
+def segment_graph(graph_edges, num_nodes, const, min_size, threshold_func):
+    # Step 1: initialization
     forest = Forest(num_nodes)
-    sorted_graph = sorted(graph, key=weight)
-    threshold = [threshold_func(1, const)] * num_nodes
+    weight = lambda edge: edge[2]
+    sorted_graph = sorted(graph_edges, key=weight)
+    threshold = [ threshold_func(1, const) for _ in range(num_nodes) ]
 
+    # Step 2: merging
     for edge in sorted_graph:
         parent_a = forest.find(edge[0])
         parent_b = forest.find(edge[1])
