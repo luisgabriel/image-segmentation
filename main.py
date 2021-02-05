@@ -43,7 +43,7 @@ def get_segmented_image(sigma, neighbor, K, min_comp_size, input_file, output_fi
 
     # Gaussian Filter
     smooth = image_file.filter(ImageFilter.GaussianBlur(sigma))
-    smooth = np.array(smooth)
+    smooth = np.array(smooth).astype(int)
     
     logger.info("Creating graph...")
     graph_edges = build_graph(smooth, size[1], size[0], diff, neighbor==8)
